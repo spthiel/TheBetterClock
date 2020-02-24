@@ -3,15 +3,13 @@
 		<link href="https://fonts.googleapis.com/css?family=Libre+Barcode+39&display=swap" rel="stylesheet">
 		<link href="https://fonts.googleapis.com/css?family=Anonymous+Pro&display=swap" rel="stylesheet">
 		<script>
+			let state = 0;
 		
 			document.addEventListener('click',(e) => {
-				let clock = document.getElementById("clock");
-				if(clock.hasAttribute("style")) {
-					clock.removeAttribute("style");
-				} else {
-					clock.setAttribute("style","font-family: \"Libre Barcode 39\"");
-				}
-			})
+				let body = document.body;
+				state = (state+1)%5;
+				body.setAttribute("state",state);
+			});
 		
 			function time() {
 				let clock = document.getElementById("clock");
@@ -29,7 +27,49 @@
 				let minutes = (s/100)%100 | 0;
 				let hours = (s/10000) | 0;
 				
-				clock.innerText = hours + ":" + leadingZero(minutes) + ":" + leadingZero(seconds);
+				switch(state) {
+					case 0:
+						clock.innerText = hours + ":" + leadingZero(minutes) + ":" + leadingZero(seconds);
+						break;
+					case 1:
+						clock.innerText = hours + leadingZero(minutes) + leadingZero(seconds);
+						break;
+					case 2:
+						clock.innerText = toBinary(hours) + ":" + toBinary(minutes) + ":" + toBinary(seconds);
+						break;
+					case 3:
+						clock.innerText = toHex(hours) + ":" + toHex(minutes) + ":" + toHex(seconds);
+						break;
+					case 4:
+						binaryDisplay(hours, minutes, seconds);
+						break;
+						
+				}
+
+			}
+
+			function binaryDisplay(hours, minutes, seconds) {
+				let string = toOtherBinary(hours) + toOtherBinary(minutes) + toOtherBinary(seconds);
+				let elements = document.getElementsByClassName("number");
+				console.log(string.length, string, toOtherBinary(hours), toOtherBinary(minutes), toOtherBinary(seconds));
+				for(let i = 0; i < string.length; i++) {
+					elements[i].innerText = string[i];
+				}
+			}
+
+			function toOtherBinary(number) {
+				let front = number/10 | 0;
+				front = front.toString(2);
+				let back = number%10;
+				back = back.toString(2);
+				let zeros = "0000";
+				console.log(front, back, leadingZeros(zeros, front), leadingZeros(zeros, back));
+				return leadingZeros(zeros, front) + "" +  leadingZeros(zeros, back);
+			}
+
+			function leadingZeros(zerostring, number) {
+				number = String(number);
+				return zerostring.substring(number.length) + number;
 			}
 
 			function leadingZero(num) {
@@ -40,26 +80,114 @@
 				time();
 				requestAnimationFrame(tick);
 			}
+			
+			function toBinary(number) {
+				let zeros = "00000000";
+				let binary = number.toString(2);
+				return leadingZeros(zeros, binary);
+			}
+
+			function toHex(number) {
+				let zeros = "00";
+				let hex = number.toString(16);
+				return leadingZeros(zeros, hex);
+			}
 
 			tick();
 		</script>
 		<style>
-			#clock {
+
+			body {
+				font-size: 10vmin;
+				font-family: "Anonymous Pro", monospace;
+			}
+
+			#clock,
+			#binaryclock {
 				position: absolute;
 				left: 50%;
 				top: 50%;
-				font-size: 10vmin;
-				font-family: "Anonymous Pro", monospace;
 				transform: translate(-50%, -50%);
 				color: white;
 			}
+
+			[state="1"] #clock {
+				font-family: "Libre Barcode 39"
+			}
+
+			[state="2"] #clock {
+				font-size: 4vmin;
+			}
+
+			[state="4"] #clock {
+				display: none;
+			}
+
+			body:not([state="4"]) #binaryclock {
+				display: none;
+			}
+
 			body {
 				margin: 0;
 				background: repeating-linear-gradient(135deg, rgba(145, 145, 145, 0.02) 0px, rgba(145, 145, 145, 0.02) 39px,rgba(140, 140, 140, 0.02) 39px, rgba(140, 140, 140, 0.02) 57px,rgba(9, 9, 9, 0.02) 57px, rgba(9, 9, 9, 0.02) 91px,rgba(217, 217, 217, 0.02) 91px, rgba(217, 217, 217, 0.02) 119px,rgba(45, 45, 45, 0.02) 119px, rgba(45, 45, 45, 0.02) 141px,rgba(227, 227, 227, 0.02) 141px, rgba(227, 227, 227, 0.02) 184px,rgba(236, 236, 236, 0.02) 184px, rgba(236, 236, 236, 0.02) 227px,rgba(124, 124, 124, 0.02) 227px, rgba(124, 124, 124, 0.02) 244px),repeating-linear-gradient(135deg, rgba(39, 39, 39, 0.02) 0px, rgba(39, 39, 39, 0.02) 23px,rgba(2, 2, 2, 0.02) 23px, rgba(2, 2, 2, 0.02) 55px,rgba(13, 13, 13, 0.02) 55px, rgba(13, 13, 13, 0.02) 71px,rgba(44, 44, 44, 0.02) 71px, rgba(44, 44, 44, 0.02) 98px,rgba(240, 240, 240, 0.02) 98px, rgba(240, 240, 240, 0.02) 134px,rgba(182, 182, 182, 0.02) 134px, rgba(182, 182, 182, 0.02) 159px,rgba(246, 246, 246, 0.02) 159px, rgba(246, 246, 246, 0.02) 174px,rgba(157, 157, 157, 0.02) 174px, rgba(157, 157, 157, 0.02) 190px),repeating-linear-gradient(135deg, rgba(145, 145, 145, 0.02) 0px, rgba(145, 145, 145, 0.02) 35px,rgba(217, 217, 217, 0.02) 35px, rgba(217, 217, 217, 0.02) 53px,rgba(199, 199, 199, 0.02) 53px, rgba(199, 199, 199, 0.02) 70px,rgba(196, 196, 196, 0.02) 70px, rgba(196, 196, 196, 0.02) 114px,rgba(137, 137, 137, 0.02) 114px, rgba(137, 137, 137, 0.02) 143px,rgba(249, 249, 249, 0.02) 143px, rgba(249, 249, 249, 0.02) 191px,rgba(247, 247, 247, 0.02) 191px, rgba(247, 247, 247, 0.02) 239px,rgba(38, 38, 38, 0.02) 239px, rgba(38, 38, 38, 0.02) 273px),linear-gradient(90deg, rgb(69, 69, 69),rgb(3, 3, 3));
 			}
+
+			#binaryclock {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+			}
+
+			.digit {
+				display: flex;
+				flex-direction: column;
+			}
+			.number {
+				height: 1.2em;
+			}
 		</style>
 	</head>
-	<body>
+	<body state="0">
 		<div id="clock"></div>
+		<div id="binaryclock">
+			<div class="digit">
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+			</div>
+			<div class="digit">
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+			</div>
+			<span>:</span>
+			<div class="digit">
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+			</div>
+			<div class="digit">
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+			</div>
+			<span>:</span>
+			<div class="digit">
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+			</div>
+			<div class="digit">
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+				<div class="number">0</div>
+			</div>
+		</div>
 	</body>
 </html>
